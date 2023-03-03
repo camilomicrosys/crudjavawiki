@@ -5,6 +5,22 @@
 package ventanas;
 import java.sql.*;
 import javax.swing.JOptionPane;
+//importamos esto de pdf
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
+
+//esto para manejar insersion de imagenes 
+import com.itextpdf.text.Chunk;
+import com.itextpdf.text.Image;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Font;
+
+
+import java.io.FileOutputStream;
 /**
  *
  * @author Lenovo
@@ -40,6 +56,7 @@ public class RegistroAlumnos extends javax.swing.JFrame {
         txt_codigo_alumno = new javax.swing.JTextField();
         btnBuscar = new javax.swing.JButton();
         label_status = new javax.swing.JLabel();
+        btnReporte = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -83,6 +100,13 @@ public class RegistroAlumnos extends javax.swing.JFrame {
             }
         });
 
+        btnReporte.setText("Generar reporte");
+        btnReporte.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnReporteActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -106,7 +130,9 @@ public class RegistroAlumnos extends javax.swing.JFrame {
                                         .addGap(18, 18, 18)
                                         .addComponent(brnModificar)
                                         .addGap(31, 31, 31)
-                                        .addComponent(btnEliminar))
+                                        .addComponent(btnEliminar)
+                                        .addGap(27, 27, 27)
+                                        .addComponent(btnReporte))
                                     .addGroup(layout.createSequentialGroup()
                                         .addComponent(jLabel3)
                                         .addGap(18, 18, 18)
@@ -118,7 +144,7 @@ public class RegistroAlumnos extends javax.swing.JFrame {
                                 .addGap(6, 6, 6)
                                 .addComponent(label_status))
                             .addComponent(btnBuscar))))
-                .addContainerGap(151, Short.MAX_VALUE))
+                .addContainerGap(12, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -135,7 +161,8 @@ public class RegistroAlumnos extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnAgregar)
                     .addComponent(brnModificar)
-                    .addComponent(btnEliminar))
+                    .addComponent(btnEliminar)
+                    .addComponent(btnReporte))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
@@ -273,6 +300,86 @@ public class RegistroAlumnos extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_btnEliminarActionPerformed
 
+    private void btnReporteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnReporteActionPerformed
+        // TODO add your handling code here:
+        Document documento= new Document();
+        try{
+            
+            String ruta=System.getProperty("user.home");
+            PdfWriter.getInstance(documento, new FileOutputStream(ruta+"/Desktop/reporte_alumnos.pdf"));
+            //ruta donde esta la imagen
+         
+            Image header = Image.getInstance("C:\\Users\\Lenovo\\Documents\\NetBeansProjects\\crudwikipedia\\src\\main\\java\\imagenheader\\header.png");
+            //escala de visualizacion de la imagen
+            header.scaleToFit(650,1000);
+            //la alineamos al centro
+            header.setAlignment(Chunk.ALIGN_CENTER);
+            
+            //agregamos el parrafo
+            Paragraph parrafo = new Paragraph();
+            parrafo.setAlignment(Paragraph.ALIGN_CENTER);
+            parrafo.add("formato creado por camilo \n\n");
+            parrafo.setFont(FontFactory.getFont("Tahoma",18,Font.BOLD,BaseColor.DARK_GRAY));
+            parrafo.add("alumnos registrados \n\n");
+            
+            //abrimos el docu para trabajarlo
+            documento.open();
+            //agregamos la imagen y el parrafo
+            documento.add(header);
+            documento.add(parrafo);
+            
+            //le decimos que tenemos 3 columnas
+            PdfPTable tabla= new PdfPTable(3);
+            //esto es para escribir celdas entonces iniciamos con los encabezados
+            tabla.addCell("Codigo");
+            tabla.addCell("Alumno");
+            tabla.addCell("Grupo");
+            
+            
+                        //ahora creamos la conexion
+                         try{
+                        //conexion a base de datos
+                        Connection cn= DriverManager.getConnection("jdbc:mysql://localhost/javawikipedia","root","");
+                        PreparedStatement pst= cn.prepareStatement("SELECT * FROM alumnos");
+                        //obtenemos los datos
+                        ResultSet rs = pst.executeQuery();
+                        
+                        //si encuentra datos
+                        if(rs.next()){
+                           do{
+                               
+                               //empezamos agregar los registros de la db
+                               //LAS COLUMNAS DE DB 1 ES ID 2 NOMBRE 3 GRUPO
+                               tabla.addCell(rs.getString(1));
+                               tabla.addCell(rs.getString(2));
+                               tabla.addCell(rs.getString(3));
+                               
+                           } while(rs.next());
+                          //CUANDO TERMINE DE AGREGARLOS AHORA SI LO METEMOS A LA TABLA
+                          documento.add(tabla);
+                           
+                           
+                        }
+                        
+                       
+
+
+
+                    }catch(Exception e){
+
+                    }
+                         
+                         
+            //cerramos el documento           
+            documento.close();
+            JOptionPane.showMessageDialog(rootPane, "Reporte generado exitosamente");
+            
+        }catch(Exception e){
+            
+            
+        }        
+    }//GEN-LAST:event_btnReporteActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -313,6 +420,7 @@ public class RegistroAlumnos extends javax.swing.JFrame {
     private javax.swing.JButton btnAgregar;
     private javax.swing.JButton btnBuscar;
     private javax.swing.JButton btnEliminar;
+    private javax.swing.JButton btnReporte;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
